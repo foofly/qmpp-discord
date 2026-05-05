@@ -1,0 +1,28 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"
+     role="img" aria-labelledby="qicon-title">
+  <title id="qicon-title">QMMP Discord Rich Presence</title>
+  <defs>
+    <linearGradient id="qicon-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1446"/>
+      <stop offset="100%" stop-color="#0b0b2b"/>
+    </linearGradient>
+    <linearGradient id="qicon-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9b7bff"/>
+      <stop offset="100%" stop-color="#6a5cff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#qicon-bg)"/>
+
+  <!-- Q -->
+  <circle cx="200" cy="256" r="100" stroke="url(#qicon-accent)" stroke-width="32" fill="none"/>
+
+  <!-- Q tail -->
+  <line x1="250" y1="310" x2="310" y2="370" stroke="url(#qicon-accent)" stroke-width="32" stroke-linecap="round"/>
+
+  <!-- Signal arcs -->
+  <path d="M340 220 A80 80 0 0 1 340 292"   stroke="url(#qicon-accent)" stroke-width="20" fill="none" stroke-linecap="round"/>
+  <path d="M370 200 A120 120 0 0 1 370 312" stroke="url(#qicon-accent)" stroke-width="20" fill="none" stroke-linecap="round"/>
+  <path d="M400 180 A160 160 0 0 1 400 332" stroke="url(#qicon-accent)" stroke-width="20" fill="none" stroke-linecap="round"/>
+</svg>
