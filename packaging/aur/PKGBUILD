@@ -1,0 +1,26 @@
+# Maintainer: foofly <foofly@gmail.com>
+
+pkgname=qmmp-discord-rich-presence
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="QMMP General plugin that shows the currently playing track as Discord Rich Presence"
+arch=('x86_64')
+url="https://github.com/foofly/qmpp-discord"
+license=('GPL-2.0-or-later')
+depends=('qmmp' 'qt6-base' 'qt6-websockets')
+makedepends=('cmake')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/foofly/qmpp-discord/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('4deca9bcc3455d7b244c7aaf787db5f96756ea622d2dfd17a92830837fa9df2d')
+
+build() {
+    cd "$srcdir/qmpp-discord-$pkgver"
+    cmake -B build -S . \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr
+    cmake --build build
+}
+
+package() {
+    cd "$srcdir/qmpp-discord-$pkgver"
+    DESTDIR="$pkgdir" cmake --install build
+}

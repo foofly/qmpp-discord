@@ -29,6 +29,16 @@ Tested on Fedora with Flatpak QMMP and Flatpak Vesktop.
 
 ## Installation
 
+### Arch Linux (AUR)
+
+Available on the AUR as [`qmmp-discord-rich-presence`](https://aur.archlinux.org/packages/qmmp-discord-rich-presence):
+
+```bash
+yay -S qmmp-discord-rich-presence
+```
+
+Then [enable the plugin](#enable-the-plugin).
+
 ### Pre-built binary
 
 Download `libdiscordrichpresence.so` from the [latest release](https://github.com/foofly/qmpp-discord/releases/latest) and copy it to your QMMP plugin directory:
@@ -69,7 +79,7 @@ The script detects whether QMMP is a Flatpak or system install, builds the plugi
 
 ### Enable the plugin
 
-Once installed by either method:
+Once installed:
 
 1. Open QMMP → **Settings → Plugins → General**
 2. Enable **Discord Rich Presence**
