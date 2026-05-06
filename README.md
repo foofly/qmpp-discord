@@ -67,7 +67,9 @@ If using Flatpak QMMP, also run:
 
 The script detects whether QMMP is a Flatpak or system install, builds the plugin, installs it to the correct plugin directory, and sets the required Flatpak sandbox permissions if needed.
 
-### Enable in QMMP
+### Enable the plugin
+
+Once installed by either method:
 
 1. Open QMMP → **Settings → Plugins → General**
 2. Enable **Discord Rich Presence**
