@@ -31,20 +31,15 @@ Tested on Fedora with Flatpak QMMP and Flatpak Vesktop.
 
 ### Pre-built binary
 
-Download `libdiscordrichpresence.so` from the [latest release](https://github.com/foofly/qmpp-discord/releases/latest) and copy it to your QMMP plugin directory.
+Download `libdiscordrichpresence.so` from the [latest release](https://github.com/foofly/qmpp-discord/releases/latest) and copy it to your QMMP plugin directory:
 
-**System QMMP:**
+| QMMP install | Plugin directory |
+|---|---|
+| System | `/usr/lib64/qmmp/General/` or `/usr/lib/qmmp/General/` |
+| Flatpak | `/var/lib/flatpak/app/com.ylsoftware.qmmp.Qmmp/x86_64/stable/active/files/lib/qmmp-2.3/General/` |
+
+If using Flatpak QMMP, also run:
 ```bash
-sudo cp libdiscordrichpresence.so /usr/lib64/qmmp/General/
-# or on some distros:
-sudo cp libdiscordrichpresence.so /usr/lib/qmmp/General/
-```
-
-**Flatpak QMMP:**
-```bash
-sudo cp libdiscordrichpresence.so \
-  /var/lib/flatpak/app/com.ylsoftware.qmmp.Qmmp/x86_64/stable/active/files/lib/qmmp-2.3/General/
-
 for i in $(seq 0 9); do
     flatpak override --user --filesystem=xdg-run/discord-ipc-$i com.ylsoftware.qmmp.Qmmp
 done
