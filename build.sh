@@ -39,15 +39,15 @@ print_install_hint() {
 # Resolve the Flatpak 'files' directory for QMMP, checking both system-wide
 # (/var/lib/flatpak) and per-user (~/.local/share/flatpak) installs.
 find_flatpak_files() {
-    local base
+    local base path
     for base in "/var/lib/flatpak" "$HOME/.local/share/flatpak"; do
-        local path
-        path=$(ls -d "$base/app/$FLATPAK_APP_ID/x86_64/stable/*/files" 2>/dev/null \
-               | sort | tail -1)
-        if [[ -n "$path" && -f "$path/lib/libqmmp.so" ]]; then
-            echo "$path"
-            return
-        fi
+        # Glob has to be unquoted so bash expands it; the prefix is quoted.
+        for path in "$base/app/$FLATPAK_APP_ID/x86_64/stable/"*/files; do
+            if [[ -f "$path/lib/libqmmp.so" ]]; then
+                echo "$path"
+                return
+            fi
+        done
     done
 }
 
@@ -149,27 +149,39 @@ if [[ "$MODE" == "flatpak" ]]; then
     fi
     echo "Installed: $DEST/libdiscordrichpresence.so"
 
-    # Grant QMMP Flatpak access to the Discord IPC sockets.
+    # Grant QMMP Flatpak access to the Discord IPC sockets. We need both:
+    #   xdg-run/discord-ipc-N                  — older "host runtime dir" layout
+    #   /run/user/$UID/app/<app>/discord-ipc-N — current Flatpak per-app dir
     echo ""
     echo "Granting QMMP Flatpak access to Discord IPC sockets…"
     PERM_OK=true
     for i in $(seq 0 9); do
         flatpak override --user --filesystem="xdg-run/discord-ipc-$i" "$FLATPAK_APP_ID" 2>/dev/null || PERM_OK=false
     done
+    for DISCORD_APP in dev.vencord.Vesktop com.discordapp.Discord com.discordapp.DiscordCanary; do
+        for i in $(seq 0 9); do
+            flatpak override --user \
+                --filesystem="/run/user/$UID/app/$DISCORD_APP/discord-ipc-$i" \
+                "$FLATPAK_APP_ID" 2>/dev/null || PERM_OK=false
+        done
+    done
     if $PERM_OK; then
         echo "Permissions granted."
     else
-        echo "Could not set permissions automatically. Run manually:"
-        for i in $(seq 0 9); do
-            echo "  flatpak override --user --filesystem=xdg-run/discord-ipc-$i $FLATPAK_APP_ID"
-        done
+        echo "Could not set all permissions automatically — see flatpak override docs."
     fi
+else
+    echo "Installing (needs sudo)…"
+    sudo cmake --install "$BUILD_DIR"
+fi
 
-    # If Discord/Vesktop is also a Flatpak, grant it the same socket permissions so
-    # it can create the IPC socket where QMMP can reach it.
-    echo ""
-    echo "Checking for Flatpak Discord clients…"
-    FOUND_DISCORD=false
+# If Discord/Vesktop is also a Flatpak, grant it xdg-run/discord-ipc-N so it
+# creates the IPC socket on the host runtime dir where QMMP (Flatpak or native)
+# can reach it. Without this, Flatpak Discord's socket stays inside its sandbox.
+echo ""
+echo "Checking for Flatpak Discord clients…"
+FOUND_DISCORD=false
+if command -v flatpak &>/dev/null; then
     for DISCORD_APP in dev.vencord.Vesktop com.discordapp.Discord com.discordapp.DiscordCanary; do
         if flatpak info "$DISCORD_APP" &>/dev/null; then
             FOUND_DISCORD=true
@@ -180,11 +192,8 @@ if [[ "$MODE" == "flatpak" ]]; then
             echo "  Done. Restart $DISCORD_APP for the change to take effect."
         fi
     done
-    $FOUND_DISCORD || echo "  No Flatpak Discord clients found (using native install — no action needed)."
-else
-    echo "Installing (needs sudo)…"
-    sudo cmake --install "$BUILD_DIR"
 fi
+$FOUND_DISCORD || echo "  No Flatpak Discord clients found (using native install — no action needed)."
 
 echo ""
 echo "Done. Launch QMMP, go to Plugins → General → Discord Rich Presence,"

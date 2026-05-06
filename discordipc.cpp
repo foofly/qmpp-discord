@@ -119,7 +119,21 @@ QString DiscordIPC::findSocketPath() const
 
     const QString xdgRun = qEnvironmentVariable("XDG_RUNTIME_DIR");
     if (!xdgRun.isEmpty()) {
-        // Flatpak per-app runtime directories:
+        // Flatpak per-app instance directories (current Discord/Vesktop layout):
+        // $XDG_RUNTIME_DIR/app/<app-id>/discord-ipc-N
+        // The Discord Flatpak listens here; build.sh grants QMMP filesystem
+        // access to these paths so they're visible from inside QMMP's sandbox.
+        QDir appDir(xdgRun + QStringLiteral("/app"));
+        for (const QString &app : appDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+            const QString base = appDir.filePath(app);
+            for (int i = 0; i <= 9; ++i) {
+                const QString path = base + QStringLiteral("/discord-ipc-") + QString::number(i);
+                if (QFileInfo::exists(path))
+                    return path;
+            }
+        }
+
+        // Older Flatpak per-app runtime directories (pre-2024 layout):
         // $XDG_RUNTIME_DIR/.flatpak/<app-id>/xdg-run/discord-ipc-N
         QDir flatpakDir(xdgRun + QStringLiteral("/.flatpak"));
         for (const QString &app : flatpakDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
@@ -151,7 +165,9 @@ QString DiscordIPC::findSocketPath() const
 void DiscordIPC::tryUnixSocket()
 {
     m_transport = Transport::UnixSocket;
-    m_socket.connectToServer(findSocketPath(), QIODevice::ReadWrite);
+    const QString path = findSocketPath();
+    qDebug("DiscordIPC: connecting via Unix socket: %s", qUtf8Printable(path));
+    m_socket.connectToServer(path, QIODevice::ReadWrite);
 }
 
 #ifdef HAVE_WEBSOCKETS
@@ -160,6 +176,7 @@ void DiscordIPC::tryWebSocket()
     m_transport = Transport::WebSocket;
     // The client_id in the URL query is how arRPC identifies the caller.
     const QUrl url(QStringLiteral("ws://127.0.0.1:6463/?v=1&client_id=") + m_appId);
+    qDebug("DiscordIPC: connecting via WebSocket (arRPC): %s", qUtf8Printable(url.toString()));
     m_webSocket.open(url);
 }
 #endif
@@ -344,6 +361,10 @@ void DiscordIPC::setActivity(const QString &details, const QString &state,
     root[QStringLiteral("args")]  = args;
 
     const QByteArray json = QJsonDocument(root).toJson(QJsonDocument::Compact);
+
+    qDebug("DiscordIPC: SET_ACTIVITY (%s) %s",
+           m_transport == Transport::UnixSocket ? "unix" : "ws",
+           json.constData());
 
     if (m_transport == Transport::UnixSocket)
         sendFrame(OP_FRAME, json);
