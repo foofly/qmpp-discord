@@ -40,9 +40,7 @@ Download `libdiscordrichpresence.so` from the [latest release](https://github.co
 
 If using Flatpak QMMP, also run:
 ```bash
-for i in $(seq 0 9); do
     flatpak override --user --filesystem=xdg-run/discord-ipc-$i com.ylsoftware.qmmp.Qmmp
-done
 ```
 
 ### Build from source
